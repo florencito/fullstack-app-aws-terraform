@@ -1,0 +1,25 @@
+# Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+crash.log
+
+# Terraform variable files
+terraform.tfvars
+*.tfvars
+
+# SSH keys (nunca subir)
+*.pem
+*.key
+*.pub
+.ssh/
+
+# Archivos de sistema o editores
+.DS_Store
+.vscode/
+.idea/
+
+# Salidas o logs temporales
+*.log
+*.out
+flask.log
