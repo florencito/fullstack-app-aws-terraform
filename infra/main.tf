@@ -170,14 +170,18 @@ resource "aws_instance" "flask_server" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
     user_data = <<-EOF
-    #!/bin/bash
-    set -e
-    yum update -y
-    yum install -y python3
-    pip3 install flask
+#!/bin/bash
+set -e
 
-    # Creamos el archivo app.py
-    cat <<EOL > /home/ec2-user/app.py
+# Actualizar e instalar Python
+yum update -y
+yum install -y python3
+
+# Instalar Flask como ec2-user para que systemd lo vea
+runuser -l ec2-user -c "pip3 install flask --break-system-packages"
+
+# Crear el archivo app.py
+cat <<EOL > /home/ec2-user/app.py
 from flask import Flask
 
 app = Flask(__name__)
@@ -194,14 +198,19 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 EOL
 
-    # Crear servicio systemd para iniciar la app automaticamente
-    cat <<'SERVICE' > /etc/systemd/system/flaskapp.service
+# Asignar permisos correctos
+chown ec2-user:ec2-user /home/ec2-user/app.py
+chmod +x /home/ec2-user/app.py
+
+# Crear servicio systemd para Flask
+cat <<'SERVICE' > /etc/systemd/system/flaskapp.service
 [Unit]
 Description=Flask App
 After=network.target
 
 [Service]
 User=ec2-user
+Environment=PATH=/usr/bin
 WorkingDirectory=/home/ec2-user
 ExecStart=/usr/bin/python3 /home/ec2-user/app.py
 Restart=always
@@ -210,9 +219,12 @@ Restart=always
 WantedBy=multi-user.target
 SERVICE
 
-    systemctl daemon-reload
-    systemctl enable --now flaskapp
+# Iniciar el servicio automáticamente
+systemctl daemon-reload
+systemctl enable flaskapp
+systemctl start flaskapp
 EOF
+
 
 
   tags = {
