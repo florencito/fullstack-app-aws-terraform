@@ -173,9 +173,10 @@ resource "aws_instance" "flask_server" {
 #!/bin/bash
 set -e
 
-# Actualizar e instalar Docker, Git y MySQL client
-yum update -y
-yum install -y docker git mysql
+# Actualizar e instalar docker, git y mysql
+dnf install -y docker git
+dnf install -y https://dev.mysql.com/get/mysql80-community-release-el9-1.noarch.rpm
+dnf install --nogpgcheck -y mysql-community-client
 
 # Iniciar Docker
 systemctl start docker
