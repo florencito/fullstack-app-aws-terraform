@@ -157,7 +157,7 @@ resource "aws_security_group" "ec2_sg" {
 
 resource "aws_key_pair" "flask_key" {
   key_name = "flask-key"
-  public_key = file(var.public_key)
+  public_key = var.public_key
 }
 
 resource "aws_instance" "flask_server" {
