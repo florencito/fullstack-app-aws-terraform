@@ -173,9 +173,9 @@ resource "aws_instance" "flask_server" {
 #!/bin/bash
 set -e
 
-# Actualizar e instalar Docker
+# Actualizar e instalar Docker, Git y MySQL client
 yum update -y
-yum install -y docker git
+yum install -y docker git mysql
 
 # Iniciar Docker
 systemctl start docker
@@ -188,13 +188,34 @@ usermod -a -G docker ec2-user
 cd /home/ec2-user
 git clone https://github.com/florencito/fullstack-app-aws-terraform.git
 
-# Ir al directorio de la app Flask
-cd fullstack-app-aws-terraform/app
+# Ir al proyecto
+cd fullstack-app-aws-terraform
 
-# Construir y correr el contenedor
+# Crear archivo .env para la app Flask
+cat <<EOT >> app/.env
+DB_HOST=${aws_db_instance.mysql.address}
+DB_USER=${var.db_username}
+DB_PASSWORD=${var.db_password}
+DB_NAME=mydb
+EOT
+
+# Dar permisos de ejecución al script para cargar datos en RDS
+chmod +x db/docker-entrypoint.sh
+
+# Ejecutar el script de inicialización de la base de datos
+DB_HOST="${aws_db_instance.mysql.address}" \
+DB_USER="${var.db_username}" \
+DB_PASSWORD="${var.db_password}" \
+./db/docker-entrypoint.sh > /home/ec2-user/sql_output.log 2>&1
+
+# Ir al directorio de la app Flask
+cd app
+
+# Construir y correr el contenedor usando el .env
 docker build -t flask-app .
-docker run -d -p 5000:5000 --name flask-container flask-app
+docker run -d --env-file .env -p 5000:5000 --name flask-container flask-app
 EOF
+
 
   tags = {
     Name = "${var.project}-ec2"
