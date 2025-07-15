@@ -169,63 +169,32 @@ resource "aws_instance" "flask_server" {
   key_name      = aws_key_pair.flask_key.key_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
-    user_data = <<-EOF
+  user_data = <<-EOF
 #!/bin/bash
 set -e
 
-# Actualizar e instalar Python
+# Actualizar e instalar Docker
 yum update -y
-yum install -y python3
+yum install -y docker git
 
-# Instalar Flask como ec2-user para que systemd lo vea
-runuser -l ec2-user -c "pip3 install flask --break-system-packages"
+# Iniciar Docker
+systemctl start docker
+systemctl enable docker
 
-# Crear el archivo app.py
-cat <<EOL > /home/ec2-user/app.py
-from flask import Flask
+# Agregar ec2-user al grupo docker
+usermod -a -G docker ec2-user
 
-app = Flask(__name__)
+# Clonar el repositorio
+cd /home/ec2-user
+git clone https://github.com/florencito/fullstack-app-aws-terraform.git
 
-@app.route("/")
-def home():
-    return "Hola desde Flask en EC2!"
+# Ir al directorio de la app Flask
+cd fullstack-app-aws/app
 
-@app.route("/inventario")
-def inventario():
-    return {"items": ["producto1", "producto2"]}
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-EOL
-
-# Asignar permisos correctos
-chown ec2-user:ec2-user /home/ec2-user/app.py
-chmod +x /home/ec2-user/app.py
-
-# Crear servicio systemd para Flask
-cat <<'SERVICE' > /etc/systemd/system/flaskapp.service
-[Unit]
-Description=Flask App
-After=network.target
-
-[Service]
-User=ec2-user
-Environment=PATH=/usr/bin
-WorkingDirectory=/home/ec2-user
-ExecStart=/usr/bin/python3 /home/ec2-user/app.py
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-SERVICE
-
-# Iniciar el servicio automáticamente
-systemctl daemon-reload
-systemctl enable flaskapp
-systemctl start flaskapp
+# Construir y correr el contenedor
+docker build -t flask-app .
+docker run -d -p 5000:5000 --name flask-container flask-app
 EOF
-
-
 
   tags = {
     Name = "${var.project}-ec2"
