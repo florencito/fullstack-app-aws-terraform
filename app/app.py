@@ -1,39 +1,55 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
+import mysql.connector
+import os
 
 app = Flask(__name__)
 
-# Mock de inventario
-inventory = [
-    {"id": 1, "name": "Producto A"},
-    {"id": 2, "name": "Producto B"}
-]
+# Conexión a MySQL usando .env
+db_config = {
+    'host': os.environ.get('DB_HOST', 'webapp-project-mysql.cst866sqsagj.us-east-1.rds.amazonaws.com'),
+    'port': int(os.environ.get('DB_PORT', 3306)),
+    'user': os.environ.get('DB_USER', 'admin'),
+    'password': os.environ.get('DB_PASSWORD', 'Admin12345!'),
+    'database': os.environ.get('DB_NAME', 'mydb')
+}
 
 @app.route("/")
 def home():
-    return "Hola desde Flask en EC2 Docker!"
+    return "Hola desde Flask conectado a MySQL!"
 
 @app.route("/inventario", methods=["GET", "POST", "PUT", "DELETE"])
 def inventario():
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+
     if request.method == "GET":
-        return jsonify(inventory)
+        cursor.execute("SELECT * FROM productos")
+        results = cursor.fetchall()
+        conn.close()
+        return jsonify(results)
+
     elif request.method == "POST":
         data = request.json
-        inventory.append(data)
+        cursor.execute("INSERT INTO productos (nombre, cantidad) VALUES (%s, %s)",
+                       (data["nombre"], data["cantidad"]))
+        conn.commit()
+        conn.close()
         return jsonify({"message": "Producto agregado"}), 201
+
     elif request.method == "PUT":
         data = request.json
-        for item in inventory:
-            if item["id"] == data["id"]:
-                item.update(data)
-                return jsonify({"message": "Producto actualizado"}), 200
-        return jsonify({"error": "Producto no encontrado"}), 404
+        cursor.execute("UPDATE productos SET nombre=%s, cantidad=%s WHERE id=%s",
+                       (data["nombre"], data["cantidad"], data["id"]))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Producto actualizado"}), 200
+
     elif request.method == "DELETE":
         data = request.json
-        for i, item in enumerate(inventory):
-            if item["id"] == data["id"]:
-                del inventory[i]
-                return jsonify({"message": "Producto eliminado"}), 200
-        return jsonify({"error": "Producto no encontrado"}), 404
+        cursor.execute("DELETE FROM productos WHERE id=%s", (data["id"],))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Producto eliminado"}), 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

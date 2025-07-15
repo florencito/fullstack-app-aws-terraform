@@ -23,3 +23,5 @@ terraform.tfvars
 *.log
 *.out
 flask.log
+
+.env
