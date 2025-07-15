@@ -58,9 +58,7 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
 - `/` → "Hola desde Flask en EC2!"
 - `/inventario` → Returns a JSON list of items.
 
-## 🔐 Notes
-
-- The EC2 instance uses `user_data` to automatically install dependencies and launch the Flask app.
+- The EC2 instance uses `user_data` to install dependencies and create a systemd service so the Flask app starts automatically.
 - Make sure your `.pem` file (key pair) is secured and added to your SSH agent.
 - Provide the path to your public key using the `public_key_path` variable when
   running Terraform.
