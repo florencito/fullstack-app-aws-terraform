@@ -1,0 +1,31 @@
+name: Deploy App
+
+on:
+  push:
+    paths:
+      - 'app/**'
+
+jobs:
+  deploy:
+    name: Deploy Flask App to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > flask-key.pem
+          chmod 600 flask-key.pem
+
+      - name: Deploy app via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no -i flask-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /home/ec2-user/fullstack-app-aws-terraform/app
+            git pull
+            docker build -t flask-app .
+            docker stop flask-container || true
+            docker rm flask-container || true
+            docker run -d -p 5000:5000 --name flask-container flask-app
+          EOF
