@@ -26,7 +26,7 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "public_key_path" {
-  description = "Ruta al archivo de clave pública SSH"
+variable "public_key" {
+  description = "String del archivo de clave pública SSH"
   type        = string
 }

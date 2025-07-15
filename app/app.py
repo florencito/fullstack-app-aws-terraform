@@ -6,11 +6,11 @@ app = Flask(__name__)
 
 # Conexión a MySQL usando .env
 db_config = {
-    'host': os.environ.get('DB_HOST', 'webapp-project-mysql.cst866sqsagj.us-east-1.rds.amazonaws.com'),
+    'host': os.environ.get('DB_HOST'),
     'port': int(os.environ.get('DB_PORT', 3306)),
-    'user': os.environ.get('DB_USER', 'admin'),
-    'password': os.environ.get('DB_PASSWORD', 'Admin12345!'),
-    'database': os.environ.get('DB_NAME', 'inventario_db')
+    'user': os.environ.get('DB_USER'),
+    'password': os.environ.get('DB_PASSWORD'),
+    'database': os.environ.get('DB_NAME')
 }
 
 @app.route("/")
