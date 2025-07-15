@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import mysql.connector
 import os
 
@@ -15,7 +15,7 @@ db_config = {
 
 @app.route("/")
 def home():
-    return "Hola desde Flask conectado a MySQL!"
+    return render_template("index.html")
 
 @app.route("/inventario", methods=["GET", "POST", "PUT", "DELETE"])
 def inventario():

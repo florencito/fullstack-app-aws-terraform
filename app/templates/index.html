@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventario</title>
+</head>
+<body>
+  <h1>Inventario</h1>
+
+  <table border="1" id="tabla">
+    <thead>
+      <tr>
+        <th>ID</th><th>Nombre</th><th>Cantidad</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Agregar producto</h2>
+  <input type="text" id="nombre" placeholder="Nombre">
+  <input type="number" id="cantidad" placeholder="Cantidad">
+  <button onclick="agregarProducto()">Agregar</button>
+
+  <script>
+    async function cargarInventario() {
+      const res = await fetch('/inventario');
+      const datos = await res.json();
+      const tbody = document.querySelector('#tabla tbody');
+      tbody.innerHTML = '';
+
+      datos.forEach(prod => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${prod.id}</td>
+            <td><input value="${prod.nombre}" onchange="editar(this, ${prod.id}, 'nombre')"></td>
+            <td><input type="number" value="${prod.cantidad}" onchange="editar(this, ${prod.id}, 'cantidad')"></td>
+            <td>
+              <button onclick="borrarProducto(${prod.id})">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function agregarProducto() {
+      const nombre = document.getElementById('nombre').value;
+      const cantidad = document.getElementById('cantidad').value;
+
+      await fetch('/inventario', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({nombre, cantidad})
+      });
+
+      cargarInventario();
+    }
+
+    async function editar(input, id, campo) {
+      const row = input.parentElement.parentElement;
+      const nombre = row.children[1].children[0].value;
+      const cantidad = row.children[2].children[0].value;
+
+      await fetch('/inventario', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id, nombre, cantidad})
+      });
+
+      cargarInventario();
+    }
+
+    async function borrarProducto(id) {
+      await fetch('/inventario', {
+        method: 'DELETE',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id})
+      });
+
+      cargarInventario();
+    }
+
+    cargarInventario();
+  </script>
+</body>
+</html>

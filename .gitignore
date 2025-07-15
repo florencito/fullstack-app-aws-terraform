@@ -8,7 +8,7 @@ crash.log
 terraform.tfvars
 *.tfvars
 
-# SSH keys (nunca subir)
+# SSH keys 
 *.pem
 *.key
 *.pub
