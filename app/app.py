@@ -10,7 +10,7 @@ db_config = {
     'port': int(os.environ.get('DB_PORT', 3306)),
     'user': os.environ.get('DB_USER', 'admin'),
     'password': os.environ.get('DB_PASSWORD', 'Admin12345!'),
-    'database': os.environ.get('DB_NAME', 'mydb')
+    'database': os.environ.get('DB_NAME', 'inventario_db')
 }
 
 @app.route("/")

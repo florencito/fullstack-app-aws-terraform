@@ -109,7 +109,7 @@ resource "aws_db_instance" "mysql" {
   engine                 = "mysql"
   engine_version         = "8.0"
   instance_class         = "db.t3.micro"
-  db_name                = "mydb"
+  db_name                = "inventario_db"
   username               = var.db_username
   password               = var.db_password
   skip_final_snapshot    = true
@@ -197,7 +197,7 @@ cat <<EOT >> app/.env
 DB_HOST=${aws_db_instance.mysql.address}
 DB_USER=${var.db_username}
 DB_PASSWORD=${var.db_password}
-DB_NAME=mydb
+DB_NAME=inventario_db
 EOT
 
 # Dar permisos de ejecución al script para cargar datos en RDS
