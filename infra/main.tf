@@ -7,22 +7,6 @@ terraform {
   }
 }
 
-
-# Bucket S3 para el Backend
-resource "aws_s3_bucket" "tf_state" {
-  bucket = "florencito-terraform-state-bucket"
-  force_destroy = true
-
-  versioning {
-    enabled = true
-  }
-
-  tags = {
-    Name = "Terraform State Bucket"
-  }
-}
-
-
 # VPC
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
