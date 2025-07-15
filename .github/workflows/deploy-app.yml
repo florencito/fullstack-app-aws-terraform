@@ -22,10 +22,12 @@ jobs:
       - name: Deploy app via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -i flask-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/ec2-user/fullstack-app-aws-terraform/app
+            set -e
+            cd /home/ec2-user/fullstack-app-aws-terraform
             git pull
+            cd app
             docker build -t flask-app .
             docker stop flask-container || true
             docker rm flask-container || true
-            docker run -d -p 5000:5000 --name flask-container flask-app
+            docker run -d --env-file .env -p 5000:5000 --name flask-container flask-app
           EOF
