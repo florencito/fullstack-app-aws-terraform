@@ -22,6 +22,7 @@ jobs:
       - name: Deploy app via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -i flask-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            sudo chown -R ec2-user:ec2-user /home/ec2-user/fullstack-app-aws-terraform
             git config --global --add safe.directory /home/ec2-user/fullstack-app-aws-terraform
             set -e
             cd /home/ec2-user/fullstack-app-aws-terraform
