@@ -157,7 +157,9 @@ resource "aws_security_group" "ec2_sg" {
 
 resource "aws_key_pair" "flask_key" {
   key_name   = "flask-key"
-  public_key = file("~/.ssh/flask-key.pub") # Ruta absoluta
+  # Terraform no expande la tilde (~), por lo que usamos una variable
+  # para especificar la ruta del archivo de clave pública.
+  public_key = file(var.public_key_path)
 }
 
 resource "aws_instance" "flask_server" {

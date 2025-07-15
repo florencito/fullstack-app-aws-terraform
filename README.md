@@ -43,9 +43,9 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
    terraform plan
    ```
 
-4. Apply the infrastructure:
+4. Apply the infrastructure (remember to pass the path to your public SSH key):
    ```bash
-   terraform apply
+   terraform apply -var="public_key_path=~/.ssh/flask-key.pub"
    ```
 
 5. Once the infrastructure is deployed, copy the EC2 public IP and open it in your browser:
@@ -62,6 +62,8 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
 
 - The EC2 instance uses `user_data` to automatically install dependencies and launch the Flask app.
 - Make sure your `.pem` file (key pair) is secured and added to your SSH agent.
+- Provide the path to your public key using the `public_key_path` variable when
+  running Terraform.
 
 ## 🧹 To Destroy
 
