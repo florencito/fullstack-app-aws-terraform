@@ -1,10 +1,10 @@
 # AWS Terraform Flask App
 
-This project uses Terraform to provision a basic infrastructure on AWS, including:
+This project provisions a small AWS environment using Terraform:
 
-- An EC2 instance running a simple Flask API.
+- An EC2 instance that runs the Flask API inside a Docker container.
 - An RDS MySQL database instance.
-- Security group rules allowing proper communication between the app and the DB.
+- Security groups allowing the instance to reach the database.
 
 ## 🧱 Technologies
 
@@ -12,17 +12,21 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
 - **AWS (EC2, RDS, VPC, Security Groups)**
 - **Flask**
 - **Python 3**
+- **Docker**
+- **GitHub Actions**
 
 ## 📦 Project Structure
 
 ```
 .
 ├── app/                   # Flask app code
+├── db/                    # Database init script and Dockerfile
 ├── infra/                 # Terraform code
 │   ├── main.tf
 │   ├── variables.tf
 │   ├── terraform.tfvars
 │   └── outputs.tf
+└── .github/workflows/     # Terraform CI workflows
 ```
 
 ## 🚀 How to Deploy
@@ -43,9 +47,13 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
    terraform plan
    ```
 
-4. Apply the infrastructure (remember to pass the path to your public SSH key):
+4. Apply the infrastructure. Provide your SSH **public key** along with the
+   database credentials:
    ```bash
-   terraform apply -var="public_key_path=~/.ssh/flask-key.pub"
+   terraform apply \
+     -var="public_key=$(cat ~/.ssh/flask-key.pub)" \
+     -var="db_username=<user>" \
+     -var="db_password=<password>"
    ```
 
 5. Once the infrastructure is deployed, copy the EC2 public IP and open it in your browser:
@@ -53,15 +61,25 @@ This project uses Terraform to provision a basic infrastructure on AWS, includin
    http://<EC2_PUBLIC_IP>:5000
    ```
 
+### Deploy via GitHub Actions
+
+The repository provides workflows under `.github/workflows/` that can apply or
+destroy the infrastructure. Configure the following secrets in your repository
+before triggering them:
+
+- `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY` – AWS credentials
+- `DB_USERNAME` and `DB_PASSWORD` – credentials for the RDS instance
+- `PUBLIC_KEY` – contents of the SSH public key for the EC2 instance
+
 ## 📄 API Endpoints
 
 - `/` → "Hola desde Flask en EC2!"
 - `/inventario` → Returns a JSON list of items.
 
-- The EC2 instance uses `user_data` to install dependencies and create a systemd service so the Flask app starts automatically.
-- Make sure your `.pem` file (key pair) is secured and added to your SSH agent.
-- Provide the path to your public key using the `public_key_path` variable when
-  running Terraform.
+- The EC2 instance clones this repository, builds the Docker image and runs the
+  Flask app automatically.
+- The key pair used for SSH access is created from the `PUBLIC_KEY` value, which
+  can be stored as a GitHub secret.
 
 ## 🧹 To Destroy
 
