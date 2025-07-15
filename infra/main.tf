@@ -171,6 +171,7 @@ resource "aws_instance" "flask_server" {
 
     user_data = <<-EOF
     #!/bin/bash
+    set -e
     yum update -y
     yum install -y python3
     pip3 install flask
@@ -193,9 +194,25 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 EOL
 
-    # Iniciar el servidor Flask en segundo plano
-    cd /home/ec2-user
-    nohup python3 app.py > flask.log 2>&1 &
+    # Crear servicio systemd para iniciar la app automaticamente
+    cat <<'SERVICE' > /etc/systemd/system/flaskapp.service
+[Unit]
+Description=Flask App
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/home/ec2-user
+ExecStart=/usr/bin/python3 /home/ec2-user/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+    systemctl daemon-reload
+    systemctl enable flaskapp
+    systemctl start flaskapp
   EOF
 
 
