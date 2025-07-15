@@ -211,9 +211,8 @@ WantedBy=multi-user.target
 SERVICE
 
     systemctl daemon-reload
-    systemctl enable flaskapp
-    systemctl start flaskapp
-  EOF
+    systemctl enable --now flaskapp
+EOF
 
 
   tags = {
